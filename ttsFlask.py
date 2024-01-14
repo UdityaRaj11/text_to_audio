@@ -12,19 +12,22 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route('/generate_audio', methods=['POST'])
 def generate_audio():
-    input_text = request.form.get('input_text')
-    
+    input_text = request.json.get('input_text')
+
+    if input_text is None or input_text.strip() == '':
+        return 'Input text cannot be empty', 400
+
     response = openai.audio.speech.create(
         model="tts-1",
         voice="alloy",
         input=input_text,
     )
     
-    audio_data = response['data'][0]['audio']
-    
+    audio_data = response['audio']  
+
     with open('output.mp3', 'wb') as audio_file:
         audio_file.write(audio_data)
-    
+
     return send_file('output.mp3', as_attachment=True)
 
 if __name__ == '__main__':
